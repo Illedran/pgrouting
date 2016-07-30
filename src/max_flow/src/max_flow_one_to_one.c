@@ -27,7 +27,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 ********************************************************************PGR-GNU*/
 
-#include <pgr_types.h>
 #include "postgres.h"
 #include "executor/spi.h"
 #include "funcapi.h"
@@ -48,7 +47,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "./../../common/src/pgr_types.h"
 #include "./../../common/src/postgres_connection.h"
 #include "./../../common/src/edges_input.h"
-#include "max_flow_one_to_one_driver.h"
+#include "./max_flow_one_to_one_driver.h"
 
 PGDLLEXPORT Datum
 max_flow_one_to_one(PG_FUNCTION_ARGS);
@@ -66,7 +65,9 @@ process(
     size_t *result_count) {
     pgr_SPI_connect();
 
-    if(!(strcmp(algorithm, "push_relabel") == 0 || strcmp(algorithm, "edmonds_karp") == 0 || strcmp(algorithm, "boykov_kolmogorov") == 0)){
+    if (!(strcmp(algorithm, "push_relabel") == 0
+        || strcmp(algorithm, "edmonds_karp") == 0
+        || strcmp(algorithm, "boykov_kolmogorov") == 0)) {
         elog(ERROR, "Unknown algorithm");
     }
 
@@ -196,7 +197,7 @@ max_flow_one_to_one(PG_FUNCTION_ARGS) {
         }
 
         // postgres starts counting from 1
-        values[0] = Int64GetDatum(call_cntr + 1);
+        values[0] = Int32GetDatum(call_cntr + 1);
         values[1] = Int64GetDatum(result_tuples[call_cntr].edge);
         values[2] = Int64GetDatum(result_tuples[call_cntr].source);
         values[3] = Int64GetDatum(result_tuples[call_cntr].target);
