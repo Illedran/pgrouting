@@ -68,13 +68,12 @@ do_pgr_max_flow_one_to_one(
                             set_sink_vertices,
                             algorithm);
 
-        int64_t flow;
         if (strcmp(algorithm, "push_relabel") == 0) {
-            flow = G.push_relabel();
+            G.push_relabel();
         } else if (strcmp(algorithm, "edmonds_karp") == 0) {
-            flow = G.edmonds_karp();
+            G.edmonds_karp();
         } else if (strcmp(algorithm, "boykov_kolmogorov") == 0) {
-            flow = G.boykov_kolmogorov();
+            G.boykov_kolmogorov();
         } else {
             log << "Unspecified algorithm!\n";
             (*return_tuples) = NULL;
