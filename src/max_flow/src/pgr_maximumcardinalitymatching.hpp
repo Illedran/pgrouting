@@ -34,22 +34,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #endif
 #endif
 
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/max_cardinality_matching.hpp>
 
 #if 0
 #include "./../../common/src/signalhandler.h"
 #endif
 #include "./../../common/src/pgr_types.h"
 
-#include <cstdint>
 #include <map>
-
-#include <boost/config.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/push_relabel_max_flow.hpp>
-#include <boost/graph/edmonds_karp_max_flow.hpp>
-#include <boost/graph/boykov_kolmogorov_max_flow.hpp>
-#include <boost/graph/max_cardinality_matching.hpp>
-#include <boost/assert.hpp>
+#include <utility>
+#include <vector>
+#include <set>
 
 // user's functions
 // for development
@@ -60,7 +56,6 @@ typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS>
     BasicDirectedGraph;
 
 
-
 template<class G>
 class PgrCardinalityGraph {
  public:
@@ -69,7 +64,6 @@ class PgrCardinalityGraph {
   typedef typename boost::graph_traits<G>::vertex_descriptor V;
   typedef typename boost::graph_traits<G>::edge_descriptor E;
   typedef typename boost::graph_traits<G>::vertex_iterator V_it;
-  typedef typename boost::graph_traits<G>::edge_iterator E_it;
 
   std::map<int64_t, V> id_to_V;
   std::map<V, int64_t> V_to_id;
@@ -95,7 +89,7 @@ class PgrCardinalityGraph {
           vertices.insert(data_edges[i].target);
       }
       for (int64_t id : vertices) {
-          V v = add_vertex(boost_graph);
+          V v = boost::add_vertex(boost_graph);
           id_to_V.insert(std::pair<int64_t, V>(id, v));
           V_to_id.insert(std::pair<V, int64_t>(v, id));
       }
@@ -106,11 +100,11 @@ class PgrCardinalityGraph {
           V v2 = get_boost_vertex(data_edges[i].target);
           E e1;
           E e2;
-          if(data_edges[i].going){
+          if (data_edges[i].going) {
               boost::tie(e1, added) = boost::add_edge(v1, v2, boost_graph);
               E_to_id.insert(std::pair<E, int64_t>(e1, data_edges[i].id));
           }
-          if(data_edges[i].coming){
+          if (data_edges[i].coming) {
               boost::tie(e2, added) = boost::add_edge(v2, v1, boost_graph);
               E_to_id.insert(std::pair<E, int64_t>(e2, data_edges[i].id));
           }
@@ -123,8 +117,9 @@ class PgrCardinalityGraph {
       V_it vi, vi_end;
       E e;
       bool exists;
-      if (boost::is_directed(boost_graph)){
-          std::vector<bool> already_matched (num_vertices(boost_graph), false);
+      if (boost::is_directed(boost_graph)) {
+          std::vector<bool>
+              already_matched(boost::num_vertices(boost_graph), false);
           for (boost::tie(vi, vi_end) = boost::vertices(boost_graph);
                vi != vi_end;
                ++vi) {
@@ -136,9 +131,11 @@ class PgrCardinalityGraph {
                * (this last point prevents having double output with reversed
                * source and target)
                */
-              boost::tie(e, exists) = boost::edge(*vi, mate_map[*vi],boost_graph);
+              boost::tie(e, exists) =
+                  boost::edge(*vi, mate_map[*vi], boost_graph);
               if ((mate_map[*vi] != boost::graph_traits<G>::null_vertex())
-                  && exists && !already_matched[*vi] && !already_matched[mate_map[*vi]]) {
+                  && exists && !already_matched[*vi]
+                  && !already_matched[mate_map[*vi]]) {
                   already_matched[*vi] = true;
                   already_matched[mate_map[*vi]] = true;
                   pgr_basic_edge_t matched_couple;
@@ -152,9 +149,10 @@ class PgrCardinalityGraph {
           for (boost::tie(vi, vi_end) = boost::vertices(boost_graph);
                vi != vi_end;
                ++vi) {
-              boost::tie(e, exists) = boost::edge(*vi, mate_map[*vi],boost_graph);
+              boost::tie(e, exists) =
+                  boost::edge(*vi, mate_map[*vi], boost_graph);
               if ((mate_map[*vi] != boost::graph_traits<G>::null_vertex())
-                      && (*vi < mate_map[*vi])) {
+                  && (*vi < mate_map[*vi])) {
                   pgr_basic_edge_t matched_couple;
                   matched_couple.source = get_vertex_id(*vi);
                   matched_couple.target = get_vertex_id(mate_map[*vi]);
@@ -166,8 +164,7 @@ class PgrCardinalityGraph {
   }
 
   void maximum_cardinality_matching(std::vector<int64_t> &mate_map) {
-      checked_edmonds_maximum_cardinality_matching(boost_graph,
-                                           &mate_map[0]);
+      boost::edmonds_maximum_cardinality_matching(boost_graph,
+                                                  &mate_map[0]);
   }
-
 };
