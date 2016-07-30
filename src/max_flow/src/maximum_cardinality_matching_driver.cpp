@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #endif
 
 
-#include "maximum_cardinality_matching_driver.h"
+#include "./maximum_cardinality_matching_driver.h"
 
 #include <sstream>
 #include <vector>
