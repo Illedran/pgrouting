@@ -27,19 +27,29 @@ CREATE TABLE flow_example (
 	capacity INTEGER
 	);
 
-INSERT INTO flow_example (source, target, capacity) VALUES (1,2,10);
-INSERT INTO flow_example (source, target, capacity) VALUES (1,3,10);
-INSERT INTO flow_example (source, target, capacity) VALUES (2,3,2);
-INSERT INTO flow_example (source, target, capacity) VALUES (2,4,4);
-INSERT INTO flow_example (source, target, capacity) VALUES (2,5,8);
-INSERT INTO flow_example (source, target, capacity) VALUES (3,5,9);
-INSERT INTO flow_example (source, target, capacity) VALUES (4,6,10);
-INSERT INTO flow_example (source, target, capacity) VALUES (5,4,6);
-INSERT INTO flow_example (source, target, capacity) VALUES (5,6,10);
+INSERT INTO flow_example (source, target, capacity) VALUES
+(1,2,10), (1,3,10),
+(2,3,2), (2,4,4),
+(2,5,8), (3,5,9),
+(4,6,10), (5,4,6),(5,6,10);
 
 
-SELECT * FROM pgr_maxflowedmondskarp(
+SELECT * FROM pgr_edmondsKarp(
     'SELECT id, source, target, capacity FROM flow_example',
-     source_vertex := 1,
-     sink_vertex := 6
+     1, 6
 );
+
+/********************** RESULTS
+seq | edge | start_vid | end_vid | flow | residual_capacity 
+-----+------+-----------+---------+------+-------------------
+   1 |    1 |         1 |       2 |   10 |                 0
+   2 |    2 |         1 |       3 |    9 |                 1
+   3 |    4 |         2 |       4 |    4 |                 0
+   4 |    5 |         2 |       5 |    6 |                 2
+   5 |    6 |         3 |       5 |    9 |                 0
+   6 |    7 |         4 |       6 |    9 |                 1
+   7 |    8 |         5 |       4 |    5 |                 1
+   8 |    9 |         5 |       6 |   10 |                 0
+(8 rows)
+
+**********************/
